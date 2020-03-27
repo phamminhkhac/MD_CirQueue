@@ -199,6 +199,27 @@ public:
      return (itm);
    }
 
+/**
+   * Find existing item in the queue
+   *
+   * @param itm a pointer to data buffer. Data size must be size specified in the constructor.
+   * @return boolean value if item data is exist
+   */
+   bool isExist(uint8_t *itm)
+   {
+      if (isEmpty())
+        return false;
+
+      uint8_t idxTake = _idxTake;
+      while (idxTake < _itmQty)
+      {
+        if (memcmp(itm, _itmData + (_itmSize * idxTake), _itmSize) == 0)
+          return true;
+        idxTake++;
+      }
+      return false;
+   }
+
  /**
   * Set queue full behavior
   *
