@@ -55,8 +55,15 @@ Jan 2017 version 1.0
 #define CQ_DEBUG 0
 
 #if CQ_DEBUG
-#define CQ_PRINTS(s)   { Serial.print(F(s)); }
-#define CQ_PRINT(s, v) { Serial.print(F(s)); Serial.print(v); }
+#define CQ_PRINTS(s)    \
+  {                     \
+    Serial.print(F(s)); \
+  }
+#define CQ_PRINT(s, v)  \
+  {                     \
+    Serial.print(F(s)); \
+    Serial.print(v);    \
+  }
 #else
 #define CQ_PRINTS(s)
 #define CQ_PRINT(s, v)
@@ -77,9 +84,8 @@ public:
    * \param itmQty    number of items allowed in the queue.
    * \param itmSize   size of each item in bytes.
    */
-  MD_CirQueue(uint8_t itmQty, uint16_t itmSize) :
-    _itmQty(itmQty), _itmSize(itmSize),
-    _itmCount(0), _overwrite(false)
+  MD_CirQueue(uint8_t itmQty, uint16_t itmSize) : _itmQty(itmQty), _itmSize(itmSize),
+                                                  _itmCount(0), _overwrite(true)
   {
     uint16_t size = sizeof(uint8_t) * _itmQty * _itmSize;
 
@@ -106,17 +112,17 @@ public:
    * Initialize the object data. This needs to be called during setup() to initialize new
    * data for the class that cannot be done during the object creation.
    */
-   void begin(void) {};
+  void begin(void){};
 
- /**
+  /**
   * Clear contents of buffer
   *
   * Clears the buffer by resetting the head and tail pointers. Does not zero out delete
   * data in the buffer.
   */
-   inline void clear() { _idxPut = _idxTake = _itmCount = 0; };
+  inline void clear() { _idxPut = _idxTake = _itmCount = 0; };
 
- /**
+  /**
   * Push an item into the queue
   *
   * Place the item passed into the end of the queue. The item will be returned
@@ -127,17 +133,17 @@ public:
   * @param itm    a pointer to data buffer of the item to be saved. Data size must be size specified in the constructor.
   * @return true  if the item was successfully placed in the queue, false otherwise
   */
-  bool push(uint8_t* itm)
-    {
-  if (isFull())
+  bool push(uint8_t *itm)
   {
-    if (_overwrite)
+    if (isFull())
     {
-    CQ_PRINTS("\nOverwriting Q");
-    pop(_itmData + (_idxTake * _itmSize));  // pop it into itself ...
-    }
-    else
-      return(false);
+      if (_overwrite)
+      {
+        CQ_PRINTS("\nOverwriting Q");
+        pop(_itmData + (_idxTake * _itmSize)); // pop it into itself ...
+      }
+      else
+        return (false);
     }
 
     // Save item and adjust the tail pointer
@@ -145,12 +151,13 @@ public:
     memcpy(_itmData + (_itmSize * _idxPut), itm, _itmSize);
     _idxPut++;
     _itmCount++;
-    if (_idxPut == _itmQty) _idxPut = 0;
+    if (_idxPut == _itmQty)
+      _idxPut = 0;
 
-    return(true);
+    return (true);
   }
 
- /**
+  /**
   * Pop an item from the queue
   *
   * Return the first available item in the queue, copied into the buffer specified,
@@ -160,9 +167,10 @@ public:
   * @param itm  a pointer to data buffer for the retrieved item to be saved. Data size must be size specified in the constructor.
   * @return pointer to the memory buffer or NULL if the queue is empty
   */
-  uint8_t *pop(uint8_t* itm)
-    {
-    if (isEmpty()) return(NULL);
+  uint8_t *pop(uint8_t *itm)
+  {
+    if (isEmpty())
+      return (NULL);
 
     // Copy data from the buffer
     CQ_PRINT("\nPop @", _idxTake);
@@ -171,12 +179,13 @@ public:
     _itmCount--;
 
     // If head has reached last item, wrap it back around to the start
-    if (_idxTake == _itmQty) _idxTake = 0;
+    if (_idxTake == _itmQty)
+      _idxTake = 0;
 
     return (itm);
   }
 
- /**
+  /**
    * Peek at the next item in the queue
    *
    * Return a copy of the first item in the queue, copied into the buffer specified,
@@ -188,39 +197,40 @@ public:
    * @param itm a pointer to data buffer for the copied item to be saved. Data size must be size specified in the constructor.
    * @return pointer to the memory buffer or NULL if the queue is empty
    */
-   uint8_t *peek(uint8_t* itm)
-   {
-     if (isEmpty()) return(NULL);
+  uint8_t *peek(uint8_t *itm)
+  {
+    if (isEmpty())
+      return (NULL);
 
-     // Copy data from the buffer
-     CQ_PRINT("\nPeek @", _idxTake);
-     memcpy(itm, _itmData + (_itmSize * _idxTake), _itmSize);
+    // Copy data from the buffer
+    CQ_PRINT("\nPeek @", _idxTake);
+    memcpy(itm, _itmData + (_itmSize * _idxTake), _itmSize);
 
-     return (itm);
-   }
+    return (itm);
+  }
 
-/**
+  /**
    * Find existing item in the queue
    *
    * @param itm a pointer to data buffer. Data size must be size specified in the constructor.
    * @return boolean value if item data is exist
    */
-   bool isExist(uint8_t *itm)
-   {
-      if (isEmpty())
-        return false;
-
-      uint8_t idxTake = _idxTake;
-      while (idxTake < _itmQty)
-      {
-        if (memcmp(itm, _itmData + (_itmSize * idxTake), _itmSize) == 0)
-          return true;
-        idxTake++;
-      }
+  bool isExist(uint8_t *itm)
+  {
+    if (isEmpty())
       return false;
-   }
 
- /**
+    uint8_t idxTake = _idxTake;
+    while (idxTake < _itmQty)
+    {
+      if (memcmp(itm, _itmData + (_itmSize * idxTake), _itmSize) == 0)
+        return true;
+      idxTake++;
+    }
+    return false;
+  }
+
+  /**
   * Set queue full behavior
   *
   * If the setting is set true, then push() with a full queue will overwrite the
@@ -231,14 +241,14 @@ public:
   */
   inline void setFullOverwrite(bool b) { _overwrite = b; };
 
- /**
+  /**
   * Check if the buffer is empty
   *
   * @return true if empty, false otherwise
   */
-  inline bool isEmpty(void) { return(_itmCount == 0); };
+  inline bool isEmpty(void) { return (_itmCount == 0); };
 
- /**
+  /**
   * Check if the buffer is full
   *
   * @return true if full, false otherwise
@@ -246,12 +256,12 @@ public:
   inline bool isFull() { return (_itmCount != 0 && _itmCount == _itmQty); };
 
 private:
-  uint8_t   _itmQty;    /// number of items in the queue
-  uint16_t  _itmSize;   /// size in bytes for each item
-  uint8_t*  _itmData;   /// pointer to allocated memory buffer
+  uint8_t _itmQty;   /// number of items in the queue
+  uint16_t _itmSize; /// size in bytes for each item
+  uint8_t *_itmData; /// pointer to allocated memory buffer
 
-  uint8_t   _itmCount;  /// number of items in the queue
-  uint8_t   _idxPut;    /// array index where the next push will occur
-  uint8_t   _idxTake;   /// array index where next pop will occur
-  bool      _overwrite; /// when true, overwrite oldest object if push() and isFull()
+  uint8_t _itmCount; /// number of items in the queue
+  uint8_t _idxPut;   /// array index where the next push will occur
+  uint8_t _idxTake;  /// array index where next pop will occur
+  bool _overwrite;   /// when true, overwrite oldest object if push() and isFull()
 };
