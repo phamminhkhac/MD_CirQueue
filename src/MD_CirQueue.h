@@ -133,7 +133,7 @@ public:
   * @param itm    a pointer to data buffer of the item to be saved. Data size must be size specified in the constructor.
   * @return true  if the item was successfully placed in the queue, false otherwise
   */
-  bool push(uint8_t *itm)
+  bool push(void *itm)
   {
     if (isFull())
     {
@@ -167,7 +167,7 @@ public:
   * @param itm  a pointer to data buffer for the retrieved item to be saved. Data size must be size specified in the constructor.
   * @return pointer to the memory buffer or NULL if the queue is empty
   */
-  uint8_t *pop(uint8_t *itm)
+  void *pop(void *itm)
   {
     if (isEmpty())
       return (NULL);
@@ -197,7 +197,7 @@ public:
    * @param itm a pointer to data buffer for the copied item to be saved. Data size must be size specified in the constructor.
    * @return pointer to the memory buffer or NULL if the queue is empty
    */
-  uint8_t *peek(uint8_t *itm)
+  void *peek(void *itm)
   {
     if (isEmpty())
       return (NULL);
@@ -215,7 +215,7 @@ public:
    * @param itm a pointer to data buffer. Data size must be size specified in the constructor.
    * @return boolean value if item data is exist
    */
-  bool isExist(uint8_t *itm)
+  bool isExist(void *itm)
   {
     if (isEmpty())
       return false;
@@ -247,6 +247,13 @@ public:
   * @return true if empty, false otherwise
   */
   inline bool isEmpty(void) { return (_itmCount == 0); };
+
+  /**
+  * Return current itesms count
+  *
+  * @return Return current itesms count
+  */
+  inline uint8_t count(void) { return _itmCount; };
 
   /**
   * Check if the buffer is full
